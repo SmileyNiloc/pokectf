@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pokédex Lookup</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Courier New", Courier, monospace;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        min-height: 100vh;
+        color: #eee;
+        padding: 40px 20px;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        text-align: center;
+        color: #ff6b6b;
+        margin-bottom: 30px;
+        text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+      }
+
+      .search-box {
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px solid rgba(255, 107, 107, 0.3);
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+      }
+
+      .input-group {
+        display: flex;
+        gap: 10px;
+      }
+
+      input[type="number"] {
+        flex: 1;
+        padding: 15px;
+        font-size: 1.2em;
+        border: 2px solid #444;
+        border-radius: 8px;
+        background: #2a2a4a;
+        color: #fff;
+        outline: none;
+      }
+
+      input[type="number"]:focus {
+        border-color: #ff6b6b;
+      }
+
+      button {
+        padding: 15px 30px;
+        font-size: 1.1em;
+        background: #ff6b6b;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+
+      button:hover {
+        background: #ee5a5a;
+      }
+
+      .result {
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px solid rgba(66, 185, 131, 0.3);
+        border-radius: 15px;
+        padding: 30px;
+        display: none;
+      }
+
+      .result.show {
+        display: block;
+      }
+
+      .result.error {
+        border-color: rgba(255, 107, 107, 0.5);
+      }
+
+      .pokemon-header {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 20px;
+      }
+
+      .pokemon-header img {
+        width: 120px;
+        height: 120px;
+        image-rendering: pixelated;
+      }
+
+      .pokemon-header h2 {
+        color: #42b983;
+        font-size: 2em;
+      }
+
+      .pokemon-header .id {
+        color: #888;
+        font-size: 1.2em;
+      }
+
+      .pokemon-types {
+        margin-bottom: 15px;
+      }
+
+      .type-badge {
+        display: inline-block;
+        padding: 5px 15px;
+        margin-right: 8px;
+        border-radius: 20px;
+        font-size: 0.9em;
+        background: #444;
+      }
+
+      .pokemon-details {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+        padding: 20px;
+      }
+
+      .pokemon-details pre {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        color: #aaa;
+        font-size: 0.9em;
+      }
+
+      .error-message {
+        color: #ff6b6b;
+        text-align: center;
+        font-size: 1.2em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🔴 Pokédex Lookup</h1>
+
+      <div class="search-box">
+        <div class="input-group">
+          <input
+            type="number"
+            id="pokedexInput"
+            placeholder="Enter Pokédex #"
+            min="1"
+          />
+          <button onclick="searchPokemon()">Search</button>
+        </div>
+      </div>
+
+      <div class="result" id="result">
+        <div id="pokemonContent"></div>
+      </div>
+    </div>
+
+    <script>
+      const API_URL = "http://localhost:3030";
+
+      async function searchPokemon() {
+        const input = document.getElementById("pokedexInput");
+        const resultDiv = document.getElementById("result");
+        const contentDiv = document.getElementById("pokemonContent");
+        const pokedexId = input.value;
+
+        if (!pokedexId) {
+          alert("Please enter a Pokédex number");
+          return;
+        }
+
+        try {
+          const response = await fetch(`${API_URL}/getpokemon/${pokedexId}`);
+          const data = await response.json();
+
+          resultDiv.classList.add("show");
+
+          if (response.ok) {
+            resultDiv.classList.remove("error");
+
+            const name = data.name?.english || data.name || "Unknown";
+            const types = data.type || [];
+            const species = data.species || "Unknown";
+            const description = data.description || "No description available.";
+            const image = data.image?.thumbnail || data.image?.sprite || "";
+
+            contentDiv.innerHTML = `
+            <div class="pokemon-header">
+              ${image ? `<img src="${image}" alt="${name}">` : ""}
+              <div>
+                <div class="id">#${data.id || pokedexId}</div>
+                <h2>${name}</h2>
+              </div>
+            </div>
+            <div class="pokemon-types">
+              ${types
+                .map((t) => `<span class="type-badge">${t}</span>`)
+                .join("")}
+            </div>
+            <div class="pokemon-details">
+              <p><strong>Species:</strong> ${species}</p>
+              <p style="margin-top: 10px;"><strong>Description:</strong> ${description}</p>
+            </div>
+          `;
+          } else {
+            resultDiv.classList.add("error");
+            contentDiv.innerHTML = `
+            <p class="error-message">❌ ${data.error || "Pokémon not found"}</p>
+          `;
+          }
+        } catch (error) {
+          resultDiv.classList.add("show", "error");
+          contentDiv.innerHTML = `
+          <p class="error-message">❌ Failed to connect to server</p>
+        `;
+        }
+      }
+
+      // Allow Enter key to search
+      document
+        .getElementById("pokedexInput")
+        .addEventListener("keypress", (e) => {
+          if (e.key === "Enter") searchPokemon();
+        });
+    </script>
+  </body>
+</html>

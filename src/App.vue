@@ -9,6 +9,9 @@
       <div class="challenge-tile">
         <UnownSav />
       </div>
+      <div class="challenge-tile">
+        <InvalidAuth />
+      </div>
       <!-- Add more challenge tiles here -->
     </div>
   </div>
@@ -16,6 +19,7 @@
 
 <script setup>
 import UnownSav from "./components/UnownSav.vue";
+import InvalidAuth from "./components/PokeDex.vue";
 </script>
 
 <style>
