@@ -2,7 +2,7 @@
   <div class="home">
     <header class="ctf-header">
       <h1>Pokémon themed CTF Challenges</h1>
-      <p>Test your skills across multiple challenges</p>
+      <p>Flag format is pokectf{...}</p>
     </header>
 
     <div class="flag-submission">
@@ -40,7 +40,7 @@
           :open-in-new-tab="true"
         />
       </div>
-      <div class="cllenge-tile">
+      <div class="challenge-tile">
         <ProblemTile
           title="Bad Logs"
           description="The professor said he fixed the logging system, but I'm not sure I believe him..."
@@ -59,7 +59,7 @@
 <script setup>
 import ProblemTile from "../components/ProblemTile.vue";
 import { ref } from "vue";
-const flag = ref("Check Flag here");
+const flag = ref("");
 
 const API_URL = "https://us-central1-pokectf.cloudfunctions.net/api";
 
